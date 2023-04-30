@@ -1,9 +1,9 @@
 # Cosumo del servicio sin credenciales de autenticación - FORMA # 1 ---------------------------------------------------------------------------------------------------------
-from firebase import firebase
+""" from firebase import firebase
 firebase = firebase.FirebaseApplication('https://locationuber2022-default-rtdb.firebaseio.com/', None)
-
+ """
 # FORMA # 1 ---------------------------------------------------------------------------------------------------------
-class Personas:
+""" class Personas:
     
     def getData(self, request):
         try:
@@ -17,7 +17,7 @@ class Personas:
         
 
     def createData(self, data):
-        try:
+        try:            
             result = firebase.post('/Uber/Personas', data)
             return (result != None)
         except Exception as e:
@@ -36,7 +36,7 @@ class Personas:
             return True
         except Exception as e:
             return False
-
+ """
 
 
 
@@ -46,7 +46,7 @@ class Personas:
 
 
 # Cosumo del servicio con credenciales de autenticación - FORMA # 2 ---------------------------------------------------------------------------------------------------------
-""" # Importaciones con la FORMA # 2 ---------------------------------------------------------------------------------------------------------
+# Importaciones con la FORMA # 2 ---------------------------------------------------------------------------------------------------------
 # Importo Firebase Admin SDK 
 import firebase_admin
 # Hacemos uso de credenciales que nos permitirán usar Firebase Admin SDK 
@@ -81,38 +81,44 @@ class RealTimeDatabase:
             return False
 
 
+
 class Personas:
      
-    def getData(self):
+    def getData(self, request):
 
         if(RealTimeDatabase.openConnection()):
 
-            # Accedo a la base de datos, específicamente a la tabla 'Personas' 
+            if 'id' in request.GET:
+                ref = db.reference('/Uber/Personas/'+ request.GET['id']) 
+                datos = ref.get()
+                RealTimeDatabase.closeConnection()
+                return datos if datos != None else {}
+
+            elif 'nombres' in request.GET:
+                ref = db.reference('/Uber/Personas') 
+                datos = ref.order_by_child('nombres').equal_to(request.GET['nombres']).get()
+                RealTimeDatabase.closeConnection()
+                return datos if datos != None else {}
+            elif 'apellidos' in request.GET:
+                ref = db.reference('/Uber/Personas') 
+                datos = ref.order_by_child('apellidos').start_at(request.GET['apellidos']).end_at(request.GET['apellidos'] + '\uf8ff').get()
+                RealTimeDatabase.closeConnection()
+                return datos if datos != None else {}
+
             ref = db.reference('/Uber/Personas') 
-        
-            # Llamo los datos que se encuentran en la tabla 'Personas' 
             datos = ref.order_by_key().get()
-
             RealTimeDatabase.closeConnection()
+            return datos if datos != None else {}
 
-            return datos
-        
-        return []
 
     def create(self, data):
 
         if(RealTimeDatabase.openConnection()):
             
             ref = db.reference('/Uber/Personas')  
-            max_id = ref.get()
-            if(max_id == None):
-                max_id = "id1"
-            else:
-                max_id = "id" + str(int(max(list(max_id.keys()))[2:]) + 1)
-
-            ref = db.reference('/Uber/Personas/' + max_id)
-            data['id'] = max_id
-            ref.set(data)
+            new_ref = ref.push().key
+            data['id'] = new_ref
+            ref.child(new_ref).set(data)
 
             RealTimeDatabase.closeConnection()
 
@@ -132,4 +138,19 @@ class Personas:
 
             return True
 
-        return False """
+        return False 
+
+    
+    def delete(self, id):
+
+        if(RealTimeDatabase.openConnection()):
+            
+            ref = db.reference('/Uber/Personas')
+
+            ref.child(id).delete()
+
+            RealTimeDatabase.closeConnection()
+
+            return True
+
+        return False 
