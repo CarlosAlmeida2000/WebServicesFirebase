@@ -11,7 +11,7 @@ class vwPersona(APIView):
                 persona = Personas()
                 return Response({'personas': persona.getData(request) })
             except Exception as e:
-                return Response({'personas': 'error'+str(e)})
+                return Response({'personas': 'error'})
         
     def post(self, request, format = None):
         if request.method == 'POST':
