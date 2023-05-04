@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('persona/', views.vwPersona.as_view()),
     path('correo/', views.vwCorreo.as_view()),
+    path('telegram/', views.vwTelegram.as_view()),
 ]
